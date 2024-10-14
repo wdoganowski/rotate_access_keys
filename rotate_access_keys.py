@@ -5,8 +5,10 @@ import logging
 
 logging.basicConfig(level=logging.WARNING)
 
-def rotate_access_keys(username: str):
-    client = boto3.client('iam')
+def rotate_access_keys(username: str, aws_access_key_id: str, aws_secret_access_key: str):
+    client = boto3.client('iam',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key)
     res = client.list_access_keys(UserName=username)
     accesskeydate = res['AccessKeyMetadata'][0]['CreateDate'].date()
     old_access_key_id = res['AccessKeyMetadata'][0]['AccessKeyId']
@@ -32,10 +34,10 @@ def rotate_access_keys(username: str):
         return old_access_key_id, None
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print(f"Usage: python {sys.argv[0]} <username>")
+    if len(sys.argv) != 4:
+        print(f"Usage: python {sys.argv[0]} <username> <aws_access_key_id> <aws_secret_access_key>")
         sys.exit(1)
-    access_key_id, secret_key = rotate_access_keys(sys.argv[1])
+    access_key_id, secret_key = rotate_access_keys(sys.argv[1], sys.argv[2], sys.argv[3])
     if secret_key:
         print(f"New Access Key ID: {access_key_id}")
         print(f"New Secret Key: {secret_key}")
